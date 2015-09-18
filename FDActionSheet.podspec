@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   #
 
   s.name         = "FDActionSheet"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "A custom ActionSheet used in iOS."
 
   s.description  = <<-DESC
