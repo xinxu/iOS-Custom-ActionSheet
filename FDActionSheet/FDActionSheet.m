@@ -14,15 +14,21 @@
 #define TITLE_FONT_SIZE 15
 #define BUTTON_FONT_SIZE 14
 
+@interface FDTitleLabel : UILabel<FDActionSheetTitleView>
+@end
+
+@implementation FDTitleLabel
+@end
+
+
 @interface FDActionSheet ()
 
 @property (strong, nonatomic) UIView *backgroundView;
 @property (strong, nonatomic) UIView *contentView;
 @property (strong, nonatomic) UIView *buttonView;
-@property (strong, nonatomic) UILabel *titleLabel;
 @property (strong, nonatomic) NSMutableArray *buttonArray;
 @property (strong, nonatomic) UIButton *cancelButton;
-
+@property (strong, nonatomic) UIView<FDActionSheetTitleView> *titleView;
 @property (strong, nonatomic) NSMutableArray *buttonTitleArray;
 
 @end
@@ -32,9 +38,14 @@ CGFloat contentViewHeight;
 
 @implementation FDActionSheet
 
-- (id)initWithTitle:(NSString *)title delegate:(id)delegate cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... {
+- (instancetype)initWithTitle:(NSString *)title delegate:(id)delegate cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... {
+    UIView<FDActionSheetTitleView> *titleView = [self buildDefaultTitleView:title];
+    return [self initWithTitleView:titleView delegate:delegate cancelButtonTitle:cancelButtonTitle otherButtonTitles:otherButtonTitles, nil];
+}
+
+- (instancetype)initWithTitleView:(UIView<FDActionSheetTitleView> *)titleView delegate:(id)delegate cancelButtonTitle:(NSString *)cancelButtonTitle otherButtonTitles:(NSString *)otherButtonTitles, ... {
     if (self = [super initWithFrame:[UIScreen mainScreen].bounds]) {
-        _title = title;
+        _titleView = titleView;
         _delegate = delegate;
         _cancelButtonTitle = cancelButtonTitle;
         _buttonArray = [NSMutableArray array];
@@ -69,6 +80,7 @@ CGFloat contentViewHeight;
     return self;
 }
 
+
 - (void)initContentView {
     contentViewWidth = 290 * self.frame.size.width / 320;
     contentViewHeight = 0;
@@ -79,7 +91,7 @@ CGFloat contentViewHeight;
     _buttonView = [[UIView alloc] init];
     _buttonView.backgroundColor = [UIColor whiteColor];
     
-    [self initTitle];
+    [self initTitleView];
     [self initButtons];
     [self initCancelButton];
     
@@ -87,16 +99,23 @@ CGFloat contentViewHeight;
     [self addSubview:_contentView];
 }
 
-- (void)initTitle {
-    if (_title != nil && ![_title isEqualToString:@""]) {
-        _titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, contentViewWidth, 50)];
-        _titleLabel.text = _title;
-        _titleLabel.textAlignment = NSTextAlignmentCenter;
-        _titleLabel.textColor = [UIColor blackColor];
-        _titleLabel.font = [UIFont systemFontOfSize:TITLE_FONT_SIZE];
-        _titleLabel.backgroundColor = [UIColor whiteColor];
-        [_buttonView addSubview:_titleLabel];
-        contentViewHeight += _titleLabel.frame.size.height;
+- (UIView<FDActionSheetTitleView> *)buildDefaultTitleView:(NSString *)title {
+    if (title != nil && ![title isEqualToString:@""]) {
+        FDTitleLabel *titleLabel = [[FDTitleLabel alloc] initWithFrame:CGRectMake(0, 0, contentViewWidth, 50)];
+        titleLabel.text = _title;
+        titleLabel.textAlignment = NSTextAlignmentCenter;
+        titleLabel.textColor = [UIColor blackColor];
+        titleLabel.font = [UIFont systemFontOfSize:TITLE_FONT_SIZE];
+        titleLabel.backgroundColor = [UIColor whiteColor];
+        return titleLabel;
+    }
+    return nil;
+}
+
+- (void)initTitleView {
+    if (_titleView) {
+        [_buttonView addSubview:_titleView];
+        contentViewHeight += _titleView.frame.size.height;
     }
 }
 
@@ -160,11 +179,21 @@ CGFloat contentViewHeight;
 
 - (void)setTitleColor:(UIColor *)color fontSize:(CGFloat)size {
     if (color != nil) {
-        _titleLabel.textColor = color;
+        [_titleView setTextColor:color];
     }
     
     if (size > 0) {
-        _titleLabel.font = [UIFont systemFontOfSize:size];
+        [_titleView setFont:[UIFont systemFontOfSize:size]];
+    }
+}
+
+- (void)setTitleColor:(UIColor *)color font:(UIFont *)font {
+    if (color != nil) {
+        [_titleView setTextColor:color];
+    }
+    
+    if (font != nil) {
+        [_titleView setFont:font];
     }
 }
 
